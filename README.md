@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Online Nursery (Django)
 
 Concise notes for local development, testing, and the smoke test included in the project.
@@ -85,3 +86,6 @@ If you want, I can:
 Questions or next steps: confirm if you want `requirements.txt` to contain the full freeze, or
 to keep the trimmed runtime list and produce a `requirements-dev.txt`.
 
+=======
+# FlouraNet
+>>>>>>> 25eff8fd0624e42a5d5e33fe4f1329b13148e84e
