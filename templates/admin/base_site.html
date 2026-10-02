@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+
+{% block branding %}
+  <h1 id="site-name"><a href="/">Online Nursery</a></h1>
+{% endblock %}
+{% block nav-global %}
+  {{ block.super }}
+{% endblock %}
+
+{# Insert a link into the user links (before the welcome/user menu) so it appears near "View site / Change password / Log out" #}
+{% block userlinks %}
+  <li>
+    <a class="nav-link" href="{% url 'admin:admin-dashboard' %}">
+      Analytics
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

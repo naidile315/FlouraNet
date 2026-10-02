@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="color:#1f3a2b;"><i class="fa fa-shopping-basket me-2 text-success"></i>Shopping Cart</h3>
+        <span class="badge bg-success-subtle text-success">{{ items|length }} unique item(s)</span>
+      </div>
+
+      {% if items %}
+        <div class="card border-0 shadow-sm rounded-3 mb-3">
+          <div class="card-body p-0">
+            {% for it in items %}
+              <div class="d-flex align-items-center p-3 border-bottom cart-item-row" data-item-id="{{ it.pk }}">
+                <div class="me-3 rounded-2 overflow-hidden flex-shrink-0" style="width:80px;height:80px;background:#f4f8f4;cursor:pointer;" {% if it.plant.image %}data-plant-name="{{ it.plant.name|escapejs }}" data-plant-desc="{{ it.plant.description|escapejs }}" data-plant-price="{{ it.plant.price }}" data-plant-img="{{ it.plant.image.url }}" data-plant-link="{% url 'nursery_app:plant_detail' it.plant.pk %}"{% endif %}>
+                  {% if it.plant.image %}
+                    <img src="{{ it.plant.image.url }}" class="w-100 h-100" style="object-fit:cover;" alt="{{ it.plant.name }}">
+                  {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted"><i class="fa fa-leaf"></i></div>
+                  {% endif %}
+                </div>
+
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 fw-bold">
+                    <a href="{% url 'nursery_app:plant_detail' it.plant.pk %}" class="text-dark text-decoration-none">{{ it.plant.name }}</a>
+                  </h6>
+                  <div class="text-muted small">₹{{ it.plant.price }} each</div>
+                  <div class="mt-2 d-flex align-items-center gap-1">
+                    <button class="btn btn-sm btn-outline-secondary qty-decrease py-0 px-2" data-item-id="{{ it.pk }}">−</button>
+                    <input type="number" min="1" class="form-control form-control-sm qty-input text-center py-0" style="width:55px;" value="{{ it.quantity }}" data-item-id="{{ it.pk }}">
+                    <button class="btn btn-sm btn-outline-secondary qty-increase py-0 px-2" data-item-id="{{ it.pk }}">+</button>
+                  </div>
+                </div>
+
+                <div class="text-end ps-3" style="min-width:110px;">
+                  <div class="fw-bold fs-6 text-success mb-2">₹<span class="item-total" id="item-total-{{ it.pk }}">{{ it.total_price }}</span></div>
+                  <a href="{% url 'nursery_app:remove_from_cart' it.pk %}" class="btn btn-sm btn-outline-danger" style="font-size:0.75rem;" title="Remove from cart">
+                    <i class="fa fa-trash-alt me-1"></i>Remove
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{% url 'nursery_app:shop' %}" class="btn btn-outline-success">
+            <i class="fa fa-arrow-left me-1"></i> Continue Shopping
+          </a>
+        </div>
+      {% else %}
+        <div class="card border-0 shadow-sm text-center py-5 px-3">
+          <div class="mb-3" style="font-size:45px;">🛒🪴</div>
+          <h5 class="fw-bold">Your cart is empty</h5>
+          <p class="text-muted small mb-4">You haven't added any botanical greens to your cart yet.</p>
+          <div>
+            <a href="{% url 'nursery_app:shop' %}" class="btn btn-success px-4">
+              Explore Plants & Start Shopping
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if items %}
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-3 p-4 sticky-top" style="top:90px;">
+          <h5 class="fw-bold mb-3" style="color:#1f3a2b;">Order Summary</h5>
+          <div class="d-flex justify-content-between small text-muted mb-2">
+            <span>Subtotal</span>
+            <span>₹{{ total }}</span>
+          </div>
+          <div class="d-flex justify-content-between small text-muted mb-2">
+            <span>Delivery Packaging</span>
+            <span class="text-success fw-medium">FREE</span>
+          </div>
+          <div class="d-flex justify-content-between small text-muted mb-3">
+            <span>Plant Care Guide</span>
+            <span class="text-success fw-medium">Included</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fw-bold fs-5 mb-4" style="color:#1f3a2b;">
+            <span>Estimated Total</span>
+            <span class="text-success">₹<span id="cart-total">{{ total }}</span></span>
+          </div>
+          <a href="{% url 'nursery_app:checkout' %}" class="btn btn-primary w-100 py-2 shadow-sm">
+            Proceed to Checkout <i class="fa fa-arrow-right ms-1"></i>
+          </a>
+          <div class="text-center mt-3">
+            <small class="text-muted" style="font-size:11px;">
+              <i class="fa fa-lock text-success me-1"></i> Guaranteed Safe & Secure Checkout
+            </small>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

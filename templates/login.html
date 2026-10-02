@@ -1,0 +1,134 @@
+{% extends 'base_no_nav.html' %}
+{% load static %}
+{% block content %}
+  <div class="text-center mb-4 pt-2">
+    <div class="d-inline-flex align-items-center justify-content-center bg-white shadow-sm rounded-circle mb-2" style="width:62px;height:62px;font-size:30px; border:2px solid #eef7ef;">
+      🪴
+    </div>
+    <h2 class="fw-bold mb-1" style="color:#1f3a2b; letter-spacing:-0.5px;">FlouraNet</h2>
+    <p class="text-muted small mb-0">Your botanical sanctuary &bull; Fresh plants delivered with care</p>
+  </div>
+
+  <div class="auth-card" style="max-width:440px; margin: 0 auto 40px auto;">
+    <div class="card border-0 shadow-sm" style="border-radius:16px; overflow:hidden;">
+      <div class="auth-header p-3 text-center" style="background: linear-gradient(135deg, #f0faf2, #e5f5e8); border-bottom: 1px solid rgba(47,111,68,0.08);">
+        <h4 class="mb-1 fw-bold" style="color:#1f3a2b;">Welcome Back</h4>
+        <small class="text-muted">Sign in to access your cart, orders & care guides</small>
+      </div>
+
+      <div class="card-body p-4">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show small mb-3" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post">{% csrf_token %}
+          <div class="mb-3 position-relative">
+            <label class="form-label small fw-semibold text-dark">
+              <i class="fa fa-user text-success me-1"></i> Username
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-user" style="font-size:14px;"></i></span>
+              <input class="form-control border-start-0" name="username" autocomplete="username" placeholder="Enter username" required style="font-size:0.95rem;">
+            </div>
+            <!-- recent credentials list will be injected by static/js/auth.js -->
+          </div>
+
+          <div class="mb-3 position-relative">
+            <label class="form-label small fw-semibold text-dark">
+              <i class="fa fa-lock text-success me-1"></i> Password
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-lock" style="font-size:14px;"></i></span>
+              <input class="form-control border-start-0 border-end-0" type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="Enter password" required style="font-size:0.95rem;">
+              <button class="btn btn-outline-secondary border-start-0 bg-white" type="button" id="togglePasswordBtn" title="Show/Hide Password" style="border-color:#dee2e6;">
+                <i class="fa fa-eye text-muted" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="1" id="rememberMe" name="remember">
+              <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
+            </div>
+          </div>
+
+          <div class="d-grid mb-2">
+            <button class="btn btn-primary btn-lg shadow-sm" type="submit" style="font-size:1rem; border-radius:10px;">
+              <i class="fa fa-right-to-bracket me-2"></i> Sign In
+            </button>
+          </div>
+        </form>
+
+        <div class="d-flex align-items-center my-3">
+          <hr class="flex-grow-1 my-0 text-muted opacity-25">
+          <span class="px-2 text-muted small" style="font-size:12px;">or</span>
+          <hr class="flex-grow-1 my-0 text-muted opacity-25">
+        </div>
+
+        <!-- Continue as Guest -->
+        <div class="d-grid mb-3">
+          <a href="{% url 'nursery_app:home' %}" class="btn btn-outline-success py-2" style="border-radius:10px; font-size:0.9rem;">
+            <i class="fa fa-compass me-2"></i> Continue Browsing as Guest
+          </a>
+        </div>
+
+        <div class="text-center pt-2 border-top">
+          <small class="text-muted">
+            Don't have an account? <a href="{% url 'nursery_app:register' %}" class="fw-semibold text-success text-decoration-none">Create an Account</a>
+          </small>
+        </div>
+
+        <div class="text-center mt-3 pt-2">
+          <a href="/admin/" class="text-muted small text-decoration-none" style="font-size:11px;">
+            <i class="fa fa-shield-alt text-success me-1"></i> Staff & Admin Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin toggle menu for backward compatibility -->
+  <div id="adminToggle" class="admin-toggle d-none" title="Admin">
+    <span class="fa fa-user-shield"></span>
+    <div id="adminMenu" class="admin-menu" style="display:none;"><a href="/admin/">Admin login</a></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      // Password toggle
+      var toggleBtn = document.getElementById('togglePasswordBtn');
+      var pwdInput = document.getElementById('loginPassword');
+      var eyeIcon = document.getElementById('eyeIcon');
+      if(toggleBtn && pwdInput && eyeIcon){
+        toggleBtn.addEventListener('click', function(e){
+          e.preventDefault();
+          if(pwdInput.type === 'password'){
+            pwdInput.type = 'text';
+            eyeIcon.className = 'fa fa-eye-slash text-success';
+          } else {
+            pwdInput.type = 'password';
+            eyeIcon.className = 'fa fa-eye text-muted';
+          }
+        });
+      }
+
+      // Legacy admin toggle handler
+      var toggle = document.getElementById('adminToggle');
+      if(toggle){
+        var menu = document.getElementById('adminMenu');
+        toggle.addEventListener('click', function(e){
+          if(menu.style.display === 'none') menu.style.display = 'block'; else menu.style.display = 'none';
+          e.stopPropagation();
+        });
+        document.addEventListener('click', function(){ if(menu) menu.style.display = 'none'; });
+      }
+    });
+  </script>
+  <script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

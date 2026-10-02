@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Revenue Chart{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<hr>
+<canvas id="revenueChart" width="600" height="300"></canvas>
+
+{{ labels|json_script:"labels-data" }}
+{{ data|json_script:"data-values" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = JSON.parse(document.getElementById('labels-data').textContent);
+const data = JSON.parse(document.getElementById('data-values').textContent);
+const ctx = document.getElementById('revenueChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Revenue (\u20b9)',
+      data: data,
+      backgroundColor: 'rgba(54, 162, 235, 0.5)',
+      borderColor: 'rgb(54, 162, 235)',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      y: { beginAtZero: true }
+    }
+  }
+});
+</script>
+{% endblock %}

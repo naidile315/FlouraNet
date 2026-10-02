@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="mb-0 fw-bold" style="color:#1f3a2b;">Botanical Collection</h2>
+      <small class="text-muted">
+        {% if q %}
+          Search results for <strong>"{{ q }}"</strong> &bull; {{ plants|length }} found
+        {% elif selected_category %}
+          Showing category: <strong>{{ selected_category }}</strong> &bull; {{ plants|length }} plants
+        {% else %}
+          Browse our healthy, nursery-grown collection &bull; {{ plants|length }} plants available
+        {% endif %}
+      </small>
+    </div>
+    
+    <!-- Category Filter Pills -->
+    <div class="category-pills-wrap">
+      <a href="{% url 'nursery_app:shop' %}" class="cat-pill {% if not selected_category and not q %}active{% endif %}">
+        🌿 All Plants
+      </a>
+      {% for cat in categories %}
+        <a href="{% url 'nursery_app:shop' %}?category={{ cat.name }}" class="cat-pill {% if selected_category|lower == cat.name|lower %}active{% endif %}">
+          {{ cat.name }}
+        </a>
+      {% endfor %}
+      {% if q or selected_category %}
+        <a href="{% url 'nursery_app:shop' %}" class="cat-pill text-danger border-danger-subtle">
+          <i class="fa fa-times"></i> Clear Filter
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-3 product-grid">
+    {% for plant in plants %}
+      <div class="col-6 col-md-4 col-lg-3 mb-3">
+        <div class="product-card h-100">
+          <div class="product-img-wrap">
+            {% if plant.category %}
+              <span class="badge-category-tag">{{ plant.category.name }}</span>
+            {% endif %}
+            <span class="badge-stock-tag">
+              {% if plant.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}
+            </span>
+            {% if plant.image %}
+              <a href="{% url 'nursery_app:plant_detail' plant.pk %}"
+                 data-plant-name="{{ plant.name|escapejs }}"
+                 data-plant-desc="{{ plant.description|escapejs }}"
+                 data-plant-price="{{ plant.price }}"
+                 data-plant-img="{{ plant.image.url }}"
+                 data-plant-link="{% url 'nursery_app:plant_detail' plant.pk %}">
+                <img src="{{ plant.image.url }}" class="product-image" alt="{{ plant.name }}" title="{{ plant.name }}" loading="lazy">
+              </a>
+            {% endif %}
+          </div>
+          <div class="card-body p-3 d-flex flex-column">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-half-alt"></i>
+              </div>
+              <small class="text-muted" style="font-size:11px;">4.9 (18)</small>
+            </div>
+            <h6 class="product-title mb-1 text-truncate" title="{{ plant.name }}">
+              <a href="{% url 'nursery_app:plant_detail' plant.pk %}" class="text-dark text-decoration-none">{{ plant.name }}</a>
+            </h6>
+            <div class="product-price mb-2">₹{{ plant.price }}</div>
+            <div class="mt-auto d-flex gap-1">
+              <a href="{% url 'nursery_app:plant_detail' plant.pk %}" class="btn btn-sm btn-outline-success flex-grow-1" style="font-size:0.8rem;">
+                Details
+              </a>
+              {% if user.is_authenticated %}
+                <a href="{% url 'nursery_app:add_to_cart' plant.pk %}" class="btn btn-sm btn-success px-2" title="Add to Cart">
+                  <i class="fa fa-cart-plus"></i>
+                </a>
+              {% else %}
+                <a href="{% url 'nursery_app:login' %}" class="btn btn-sm btn-success px-2" title="Login to Buy">
+                  <i class="fa fa-shopping-cart"></i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 py-5 text-center">
+        <div class="p-4 bg-white rounded-3 shadow-sm mx-auto" style="max-width:480px;">
+          <div class="mb-3" style="font-size:40px;">🔍🪴</div>
+          <h5 class="fw-bold text-dark">No plants found</h5>
+          <p class="text-muted small">We couldn't find any plants matching your search criteria. Try a different keyword or view all collections.</p>
+          <a href="{% url 'nursery_app:shop' %}" class="btn btn-sm btn-success">View All Plants</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

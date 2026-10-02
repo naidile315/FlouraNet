@@ -1,0 +1,100 @@
+{% extends 'base_no_nav.html' %}
+{% block content %}
+  <div class="text-center mb-4 pt-2">
+    <div class="d-inline-flex align-items-center justify-content-center bg-white shadow-sm rounded-circle mb-2" style="width:62px;height:62px;font-size:30px; border:2px solid #eef7ef;">
+      🪴
+    </div>
+    <h2 class="fw-bold mb-1" style="color:#1f3a2b; letter-spacing:-0.5px;">FlouraNet</h2>
+    <p class="text-muted small mb-0">Join our plant-loving community &bull; Free care guides & fast delivery</p>
+  </div>
+
+  <div class="auth-card" style="max-width:480px; margin: 0 auto 40px auto;">
+    <div class="card border-0 shadow-sm" style="border-radius:16px; overflow:hidden;">
+      <div class="auth-header p-3 text-center" style="background: linear-gradient(135deg, #f0faf2, #e5f5e8); border-bottom: 1px solid rgba(47,111,68,0.08);">
+        <h4 class="mb-1 fw-bold" style="color:#1f3a2b;">Create an Account</h4>
+        <small class="text-muted">Start your plant parenting journey today</small>
+      </div>
+
+      <div class="card-body p-4">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger alert-dismissible fade show small mb-3">
+            {% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endif %}
+
+        <form method="post">{% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark"><i class="fa fa-user text-success me-1"></i> Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <div class="text-danger small mt-1">{{ form.username.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark"><i class="fa fa-envelope text-success me-1"></i> Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark"><i class="fa fa-lock text-success me-1"></i> Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+              <div class="text-danger small mt-1">{{ form.password.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark"><i class="fa fa-check-double text-success me-1"></i> Confirm Password</label>
+            {{ form.confirm_password }}
+            {% if form.confirm_password.errors %}
+              <div class="text-danger small mt-1">{{ form.confirm_password.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-dark"><i class="fa fa-phone text-success me-1"></i> Phone (optional)</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+              <div class="text-danger small mt-1">{{ form.phone.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="d-grid mb-2">
+            <button class="btn btn-primary btn-lg shadow-sm" type="submit" style="font-size:1rem; border-radius:10px;">
+              <i class="fa fa-user-plus me-2"></i> Register Account
+            </button>
+          </div>
+        </form>
+
+        <div class="d-flex align-items-center my-3">
+          <hr class="flex-grow-1 my-0 text-muted opacity-25">
+          <span class="px-2 text-muted small" style="font-size:12px;">or</span>
+          <hr class="flex-grow-1 my-0 text-muted opacity-25">
+        </div>
+
+        <!-- Continue as Guest -->
+        <div class="d-grid mb-3">
+          <a href="{% url 'nursery_app:home' %}" class="btn btn-outline-success py-2" style="border-radius:10px; font-size:0.9rem;">
+            <i class="fa fa-compass me-2"></i> Continue Browsing as Guest
+          </a>
+        </div>
+
+        <div class="text-center pt-2 border-top">
+          <small class="text-muted">
+            Already have an account? <a href="{% url 'nursery_app:login' %}" class="fw-semibold text-success text-decoration-none">Sign In</a>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminToggle" class="admin-toggle d-none" title="Admin">
+    <span class="fa fa-user-shield"></span>
+    <div id="adminMenu" class="admin-menu" style="display:none;"><a href="/admin/">Admin login</a></div>
+  </div>
+{% endblock %}

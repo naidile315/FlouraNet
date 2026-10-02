@@ -1,0 +1,28 @@
+# Virtual Environment (do not commit virtual environments)
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache & compiled bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Logs
+*.log
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

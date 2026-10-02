@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block content %}
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'nursery_app:home' %}"><i class="fa fa-home"></i></a></li>
+      <li class="breadcrumb-item"><a href="{% url 'nursery_app:shop' %}">Shop</a></li>
+      {% if plant.category %}
+        <li class="breadcrumb-item"><a href="{% url 'nursery_app:shop' %}?category={{ plant.category.name }}">{{ plant.category.name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active" aria-current="page">{{ plant.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row plant-detail g-4">
+    <div class="col-12 col-md-6">
+      {% if plant.image %}
+        <div class="card shadow-sm border-0 overflow-hidden" style="border-radius:16px;">
+          <img src="{{ plant.image.url }}" class="img-fluid plant-image" alt="{{ plant.name }}" style="max-height:440px;width:100%;object-fit:cover;">
+        </div>
+      {% endif %}
+    </div>
+    <div class="col-12 col-md-6 d-flex align-items-start">
+      <div class="w-100">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          {% if plant.category %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle">{{ plant.category.name }}</span>
+          {% endif %}
+          {% if plant.stock|default:0 > 0 %}
+            <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>In Stock ({{ plant.stock }} available)</span>
+          {% else %}
+            <span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Out of Stock</span>
+          {% endif %}
+        </div>
+
+        <h2 class="mb-2 fw-bold" style="color:#1f3a2b;">{{ plant.name }}</h2>
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="rating-stars">
+            <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+          </div>
+          <span class="small text-muted">4.9 / 5.0 (24 reviews)</span>
+        </div>
+
+        <h3 class="product-price mb-3 fw-bold" style="color:#2f6f44;">₹{{ plant.price }}</h3>
+
+        <p class="text-muted mb-3" style="line-height:1.6;">{{ plant.description|default:"A vibrant, healthy plant cultivated in premium nursery soil with natural organic nourishment. Perfect for indoor tables, living rooms, and shaded balconies." }}</p>
+
+        <!-- Quick Botanical Care Specs -->
+        <div class="spec-grid mb-4">
+          <div class="spec-box">
+            <i class="fa fa-sun"></i>
+            <div class="spec-label">Light</div>
+            <div class="spec-val">Bright Indirect</div>
+          </div>
+          <div class="spec-box">
+            <i class="fa fa-droplet"></i>
+            <div class="spec-label">Water</div>
+            <div class="spec-val">Every 4-6 Days</div>
+          </div>
+          <div class="spec-box">
+            <i class="fa fa-temperature-half"></i>
+            <div class="spec-label">Temp</div>
+            <div class="spec-val">18°C - 28°C</div>
+          </div>
+          <div class="spec-box">
+            <i class="fa fa-seedling"></i>
+            <div class="spec-label">Maintenance</div>
+            <div class="spec-val">Beginner Friendly</div>
+          </div>
+        </div>
+
+        {% if plant.wiki_link %}
+          <a href="{{ plant.wiki_link }}" target="_blank" class="d-inline-flex align-items-center gap-1 small text-success mb-4 text-decoration-none">
+            <i class="fab fa-wikipedia-w"></i> Read more botanical details on Wikipedia <i class="fa fa-external-link-alt ms-1" style="font-size:10px;"></i>
+          </a>
+        {% else %}
+          <a href="https://en.wikipedia.org/wiki/{{ plant.name|urlencode }}" target="_blank" class="d-inline-flex align-items-center gap-1 small text-success mb-4 text-decoration-none">
+            <i class="fab fa-wikipedia-w"></i> Read botanical information on Wikipedia <i class="fa fa-external-link-alt ms-1" style="font-size:10px;"></i>
+          </a>
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+          {% if plant.stock|default:0 <= 0 %}
+            <button class="btn btn-secondary px-4 py-2" id="outOfStockBtn">
+              <i class="fa fa-bell me-1"></i> Notify When Available
+            </button>
+          {% else %}
+            {% if user.is_authenticated %}
+              <a href="{% url 'nursery_app:add_to_cart' plant.pk %}" class="btn btn-success px-4 py-2 shadow-sm">
+                <i class="fa fa-cart-plus me-1"></i> Add to Cart
+              </a>
+            {% else %}
+              <a href="{% url 'nursery_app:login' %}" class="btn btn-success px-4 py-2 shadow-sm">
+                <i class="fa fa-shopping-cart me-1"></i> Login to Buy
+              </a>
+            {% endif %}
+            <a href="{% url 'nursery_app:shop' %}" class="btn btn-outline-secondary px-3 py-2">
+              Continue Shopping
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Out of stock modal -->
+  <div class="modal fade" id="outOfStockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Unavailable</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Sorry, this plant is currently out of stock. You can submit your email to be notified as soon as our nursery restocks it.</p>
+          <form id="notifyForm" class="mt-3">
+            <div class="mb-2"><label class="form-label">Email (optional)</label><input type="email" name="email" class="form-control" placeholder="you@example.com"></div>
+            <input type="hidden" name="plant_id" value="{{ plant.pk }}">
+            <div id="notifyMessage" class="small text-success" style="display:none;"></div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-outline-primary">Notify me</button>
+              <a href="{% url 'nursery_app:shop' %}" class="btn btn-outline-secondary">Browse Shop</a>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var btn = document.getElementById('outOfStockBtn');
+      if(btn){
+        btn.addEventListener('click', function(){
+          var modalEl = document.getElementById('outOfStockModal');
+          var modal = new bootstrap.Modal(modalEl);
+          modal.show();
+        });
+      }
+
+      var notifyForm = document.getElementById('notifyForm');
+      if(notifyForm){
+        notifyForm.addEventListener('submit', function(e){
+          e.preventDefault();
+          var formData = new FormData(notifyForm);
+          fetch('{% url "nursery_app:notify_request" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
+          }).then(r=>r.json()).then(data=>{
+            var msg = document.getElementById('notifyMessage');
+            if(data.status==='ok'){
+              msg.style.display='block';
+              msg.textContent = data.message;
+            } else {
+              msg.style.display='block';
+              msg.className = 'small text-danger';
+              msg.textContent = data.message || 'Error';
+            }
+          }).catch(err=>{
+            var msg = document.getElementById('notifyMessage');
+            msg.style.display='block';
+            msg.className = 'small text-danger';
+            msg.textContent = 'Error submitting request';
+          });
+        });
+      }
+    });
+  </script>
+{% endblock %}

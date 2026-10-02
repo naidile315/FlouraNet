@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="text-center">
+    <h2>Order Confirmed</h2>
+    {% if order and order.payment_id %}
+      <p>Your payment was successful. Transaction ID: {{ order.payment_id }}</p>
+    {% else %}
+      <p>Your payment was successful.</p>
+    {% endif %}
+    <a href="{% url 'nursery_app:home' %}" class="btn btn-primary">Continue Shopping</a>
+  </div>
+{% endblock %}

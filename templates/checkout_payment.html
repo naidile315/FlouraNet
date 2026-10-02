@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Complete Payment</h2>
+  <p>Redirecting to payment gateway...</p>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    (function(){
+      const options = {
+        key: '{{ razorpay_key }}',
+        amount: '{{ rp_order.amount }}',
+        currency: '{{ rp_order.currency }}',
+        name: 'Online Nursery',
+        description: 'Order {{ order.id }}',
+        order_id: '{{ rp_order.id }}',
+        handler: function (resp) {
+          // On success, POST to server to verify
+          fetch('{% url "nursery_app:payment_verify" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: resp.razorpay_order_id,
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_signature: resp.razorpay_signature,
+              order_id: '{{ order.id }}'
+            })
+          }).then(r=>r.json()).then(data=>{
+            if(data.status==='ok'){
+              window.location.href = '{% url "nursery_app:payment_success" %}';
+            } else {
+              // redirect to a friendly failure page
+              window.location.href = '{% url "nursery_app:payment_failed" %}';
+            }
+          }).catch(err=>{
+            window.location.href = '{% url "nursery_app:payment_failed" %}';
+          });
+        }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+    })();
+  </script>
+{% endblock %}

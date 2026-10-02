@@ -1,0 +1,181 @@
+{% extends 'base_no_nav.html' %}
+{% block content %}
+  <h2>Analytics</h2>
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+      <label for="year" class="form-label">Year</label>
+      <select id="year" name="year" class="form-select">
+        {% for y in years %}
+          <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label for="period" class="form-label">Time Period</label>
+      <select id="period" name="period" class="form-select">
+        <option value="all" {% if period == 'all' %}selected{% endif %}>Full Year</option>
+        <option value="6m" {% if period == '6m' %}selected{% endif %}>Last 6 Months</option>
+        <option value="3m" {% if period == '3m' %}selected{% endif %}>Last 3 Months</option>
+        <option value="1m" {% if period == '1m' %}selected{% endif %}>Last Month</option>
+      </select>
+    </div>
+    <div class="col-auto align-end" style="margin-top: 30px;">
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </div>
+    <div class="col-auto align-end" style="margin-top: 30px;">
+      <a href="{% url 'nursery_app:export_plant_sales_csv' %}?year={{ selected_year }}" class="btn btn-outline-secondary">Download Plant CSV</a>
+    </div>
+    <div class="col-auto align-end" style="margin-top: 30px;">
+      <a href="{% url 'nursery_app:export_yearly_revenue_csv' %}?year={{ selected_year }}" class="btn btn-outline-secondary">Download Yearly Revenue CSV</a>
+    </div>
+    <div class="col-auto align-end" style="margin-top: 30px;">
+      <a href="{% url 'nursery_app:export_matrix_csv' %}?year={{ selected_year }}" class="btn btn-outline-secondary">Download Plant×Month CSV</a>
+    </div>
+    <div class="col-auto align-end" style="margin-top: 30px;">
+      <a href="{% url 'nursery_app:export_orders_csv' %}?year={{ selected_year }}" class="btn btn-outline-secondary">Download Orders CSV</a>
+    </div>
+  </form>
+    <div class="row">
+    <div class="col-md-3"><div class="card p-3">Plants<br><strong>{{ total_plants }}</strong></div></div>
+    <div class="col-md-3"><div class="card p-3">Orders<br><strong>{{ total_orders }}</strong></div></div>
+    <div class="col-md-3"><div class="card p-3">Revenue<br><strong>₹{{ total_revenue }}</strong></div></div>
+    <div class="col-md-3">
+      <div class="card p-3 bg-success text-white">
+        Peak Orders Month<br>
+        <strong>{{ max_orders_month }}</strong>
+        <small>({{ max_orders }} orders)</small>
+      </div>
+    </div>
+  </div>
+  <h4 class="mt-4">Recent Orders</h4>
+  <ul class="list-group">
+    {% for o in recent_orders %}
+  <li class="list-group-item">Order {{ o.id }} - ₹{{ o.total_amount }} - {{ o.status }}</li>
+    {% endfor %}
+  </ul>
+  <hr>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Monthly Revenue</h5>
+        <canvas id="monthlyRevenueChart"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Orders & Revenue (Monthly)</h5>
+        <canvas id="ordersRevenueChart"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Category-wise Sales</h5>
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Top Selling Plants (by qty)</h5>
+        <canvas id="topPlantsChart"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h5>Customer Growth</h5>
+        <canvas id="customerGrowthChart"></canvas>
+      </div>
+    </div>
+  </div>
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card p-3">
+          <h5>Plants sold in {{ selected_year }}</h5>
+          <table class="table table-sm">
+            <thead>
+              <tr><th>Plant</th><th>Category</th><th class="text-end">Quantity sold</th></tr>
+            </thead>
+            <tbody>
+              {% for r in plant_rows %}
+                <tr>
+                  <td>{{ r.plant }}</td>
+                  <td>{{ r.category }}</td>
+                  <td class="text-end">{{ r.qty }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="3">No sales for the selected period.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  {{ month_labels|json_script:"monthLabelsData" }}
+  {{ monthly_revenue|json_script:"monthlyRevenueData" }}
+  {{ cat_labels|json_script:"catLabelsData" }}
+  {{ cat_values|json_script:"catValuesData" }}
+  {{ top_labels|json_script:"topLabelsData" }}
+  {{ top_values|json_script:"topValuesData" }}
+  {{ monthly_customers|json_script:"monthlyCustomersData" }}
+  {{ monthly_order_counts|json_script:"monthlyOrderCountsData" }}
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const monthLabels = JSON.parse(document.getElementById('monthLabelsData').textContent || '[]');
+    const monthlyRevenue = JSON.parse(document.getElementById('monthlyRevenueData').textContent || '[]');
+    const catLabels = JSON.parse(document.getElementById('catLabelsData').textContent || '[]');
+    const catValues = JSON.parse(document.getElementById('catValuesData').textContent || '[]');
+    const topLabels = JSON.parse(document.getElementById('topLabelsData').textContent || '[]');
+    const topValues = JSON.parse(document.getElementById('topValuesData').textContent || '[]');
+    const monthlyCustomers = JSON.parse(document.getElementById('monthlyCustomersData').textContent || '[]');
+  const monthlyOrderCounts = JSON.parse(document.getElementById('monthlyOrderCountsData').textContent || '[]');
+
+    // Monthly revenue line chart
+    new Chart(document.getElementById('monthlyRevenueChart'), {
+      type: 'line',
+      data: { labels: monthLabels, datasets: [{ label: 'Revenue', data: monthlyRevenue, borderColor: '#2f6f44', backgroundColor: 'rgba(47,111,68,0.1)' }] },
+      options: { responsive: true }
+    });
+
+    // Orders & Revenue combined chart (orders as bars, revenue as line)
+    new Chart(document.getElementById('ordersRevenueChart'), {
+      data: {
+        labels: monthLabels,
+        datasets: [
+          { type: 'bar', label: 'Orders', data: monthlyOrderCounts, backgroundColor: 'rgba(47,111,68,0.6)', yAxisID: 'orders' },
+          { type: 'line', label: 'Revenue (₹)', data: monthlyRevenue, borderColor: '#265b3b', backgroundColor: 'rgba(38,91,59,0.08)', yAxisID: 'revenue' }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          orders: { type: 'linear', position: 'left', title: { display: true, text: 'Orders' } },
+          revenue: { type: 'linear', position: 'right', title: { display: true, text: 'Revenue (₹)' }, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+
+    // Category donut
+    new Chart(document.getElementById('categoryChart'), {
+      type: 'doughnut',
+      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#2f6f44','#4a9b63','#8fd7a0','#dff0e6'] }] },
+      options: { responsive: true }
+    });
+
+    // Top plants horizontal bar
+    new Chart(document.getElementById('topPlantsChart'), {
+      type: 'bar',
+      data: { labels: topLabels, datasets: [{ data: topValues, backgroundColor: '#2f6f44' }] },
+      options: { indexAxis: 'y', responsive: true }
+    });
+
+    // Customer growth line
+    new Chart(document.getElementById('customerGrowthChart'), {
+      type: 'line',
+      data: { labels: monthLabels, datasets: [{ label: 'New Customers', data: monthlyCustomers, borderColor: '#265b3b', backgroundColor: 'rgba(38,91,59,0.08)' }] },
+      options: { responsive: true }
+    });
+  </script>
+{% endblock %}

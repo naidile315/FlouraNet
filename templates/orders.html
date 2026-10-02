@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h3 class="fw-bold mb-0" style="color:#1f3a2b;"><i class="fa fa-receipt me-2 text-success"></i>Order History</h3>
+      <p class="text-muted small mb-0">Track and review your plant deliveries</p>
+    </div>
+    <a href="{% url 'nursery_app:shop' %}" class="btn btn-outline-success btn-sm">
+      <i class="fa fa-shopping-bag me-1"></i> Browse Shop
+    </a>
+  </div>
+
+  {% if orders %}
+    <div class="row g-3">
+      {% for order in orders %}
+        <div class="col-12">
+          <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap gap-2 py-3 px-4">
+              <div>
+                <span class="fw-bold text-dark me-2">Order #{{ order.id }}</span>
+                <span class="text-muted small">&bull; {{ order.order_date|date:"d M Y, h:i A" }}</span>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <span class="badge {% if order.status == 'PAID' or order.status == 'DELIVERED' %}bg-success{% elif order.status == 'PENDING' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                  {{ order.status }}
+                </span>
+                <span class="fw-bold fs-6 text-success">₹{{ order.total_amount }}</span>
+              </div>
+            </div>
+            <div class="card-body px-4 py-3">
+              <h6 class="text-muted small fw-semibold text-uppercase mb-2">Items in this order:</h6>
+              <div class="row g-2">
+                {% for item in order.items %}
+                  <div class="col-md-6 col-lg-4">
+                    <div class="p-2 border rounded-2 bg-white d-flex justify-content-between align-items-center small">
+                      <div>
+                        <strong>🪴 {{ item.plant }}</strong>
+                        <div class="text-muted">Qty: {{ item.qty }}</div>
+                      </div>
+                      <div class="fw-semibold text-success">₹{{ item.price }}</div>
+                    </div>
+                  </div>
+                {% empty %}
+                  <div class="col-12 text-muted small">No item breakdown available.</div>
+                {% endfor %}
+              </div>
+              {% if order.district or order.state %}
+                <div class="mt-3 pt-2 border-top text-muted small">
+                  <i class="fa fa-map-marker-alt text-danger me-1"></i> Delivery location: {{ order.district }}{% if order.district and order.state %}, {% endif %}{{ order.state }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card border-0 shadow-sm text-center py-5 px-3 rounded-3">
+      <div class="mb-3" style="font-size:45px;">📦🪴</div>
+      {% if is_guest %}
+        <h5 class="fw-bold">No Orders (Browsing as Guest)</h5>
+        <p class="text-muted small mb-4" style="max-width:440px; margin:0 auto;">
+          You are currently browsing as a guest, so there are no past orders linked to your session. Log in or create an account to view and track your orders!
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+          <a href="{% url 'nursery_app:login' %}" class="btn btn-success px-4">Sign In</a>
+          <a href="{% url 'nursery_app:shop' %}" class="btn btn-outline-success px-4">Browse Shop</a>
+        </div>
+      {% else %}
+        <h5 class="fw-bold">No Orders Yet</h5>
+        <p class="text-muted small mb-4">You haven't placed any plant orders yet. Start your botanical journey today!</p>
+        <div>
+          <a href="{% url 'nursery_app:shop' %}" class="btn btn-success px-4">Explore Shop</a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

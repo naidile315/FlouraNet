@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container mt-5">
+    <div class="card summary-box">
+      <div class="card-body text-center">
+        <h2 class="text-danger">Payment Failed</h2>
+        <p>We're sorry — your payment could not be completed. Please try again or contact support.</p>
+        <a class="btn btn-primary" href="{% url 'nursery_app:checkout' %}">Try Again</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
